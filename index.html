@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ქვიზი ქართულად</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: radial-gradient(circle at top left, #222, #111);
+      color: #f5f5f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      width: 100%;
+      background-color: #3f3f3f;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .welcome {
+      font-size: 16px;
+      font-weight: bold;
+      color: #ffd64d;
+    }
+
+    .quiz-container {
+      background: #1f1f1f;
+      border-radius: 20px;
+      padding: 30px 40px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+      position: relative;
+      overflow: hidden;
+      margin-top: 40px;
+    }
+
+    .quiz-container::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      left: -40%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, rgba(212,175,55,0.2), rgba(255, 215, 0, 0.05), rgba(212,175,55,0.2));
+      transform: rotate(25deg);
+      pointer-events: none;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 20px;
+      color: #ffd64d;
+      text-shadow: 0 0 8px #886600;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .option {
+      background: #2b2b2b;
+      padding: 14px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      color: #e0d7b0;
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: inset 0 0 8px rgba(212, 175, 55, 0.4);
+      transition: transform 0.15s ease, background-color 0.3s ease;
+      user-select: none;
+    }
+
+    .option:hover {
+      background: #d4af37;
+      color: #1a1a1a;
+      transform: scale(1.02);
+    }
+
+    .correct {
+      background-color: #4caf50 !important;
+      border: 2px solid #2ecc71 !important;
+      color: white !important;
+      box-shadow: 0 0 12px #2ecc71 !important;
+    }
+
+    .incorrect {
+      background-color: #f44336 !important;
+      border: 2px solid #e74c3c !important;
+      color: white !important;
+      box-shadow: 0 0 12px #e74c3c !important;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .popup-box {
+      background-color: #2b2b2b;
+      color: #f0e68c;
+      padding: 30px 35px;
+      border-radius: 16px;
+      text-align: center;
+      max-width: 360px;
+      width: 90%;
+      box-shadow: 0 8px 24px rgba(212, 175, 55, 0.7);
+      border: 1px solid #d4af37;
+      position: relative;
+    }
+
+    .popup-box h2 {
+      margin-bottom: 15px;
+      color: #ffd64d;
+    }
+
+    .popup-buttons {
+      margin-top: 25px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .popup-buttons button {
+      flex: 1;
+      padding: 12px 0;
+      background-color: #d4af37;
+      color: #1a1a1a;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .popup-buttons button:hover {
+      background-color: #e3c24b;
+    }
+
+    /* === დამატებული მობილური სტილები === */
+    @media (max-width: 480px) {
+      .quiz-container {
+        padding: 20px 25px;
+        max-width: 100%;
+        margin-top: 20px;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      .options {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .option {
+        font-size: 14px;
+        padding: 12px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ Header – მისალმება -->
+  <header>
+    <div class="welcome" id="welcomeText"></div>
+  </header>
+
+  <!-- ✅ Quiz Section -->
+  <div class="quiz-container" id="quiz"></div>
+
+  <script>
+    // ✅ მისალმების დატვირთვა
+    const firstName = localStorage.getItem("firstName");
+    const lastName = localStorage.getItem("lastName");
+    const welcomeEl = document.getElementById("welcomeText");
+
+    if (firstName && lastName) {
+      welcomeEl.textContent = `წარმატებები!, ${firstName} ${lastName}`;
+    } else {
+      welcomeEl.textContent = "წარმატებები!, სტუმარო!";
+    }
+
+    // ✅ ქვიზის ლოგიკა
+        const questions = [
+      {
+        question: "ვინ იყო შინაგან საქმეთა მინისტრი 1918 წელს საქართველოში",
+        options: ["აკაკი ჩკენკელი", "ნოე ჟორდანია", "არ არსებობდა", "გურამ იშხნელიძე"],
+        correctIndex: 3,
+        hint: ""
+      },
+      {
+        question: "დამოუკიდებელი საქართველოს პირველი კრების პრეზიდენტი იყო",
+
+        options: ["ნოე ჟორდანია", "ილია ჭავჭავაძე", "აკაკი წერეთელი", "კარლო ჩხეიძე"],
+        correctIndex: 3,
+        hint: ""
+      },
+      {
+        question: "1918 წელს დამოუკიდებელი საქართველოს სახელმწიფოს სახელი იყო",
+
+        options: ["საქართველოს საბჭოთა სოციალისტური რესპუბლიკა", "საქართველოს დემოკრატიული რესპუბლიკა", "საქართველოს სამეფო", "კავკასიის ფედერაცია"],
+        correctIndex: 1,
+        hint: ""
+      },
+      {
+        question: "დამოუკიდებელი საქართველოს კონსტიტუციის მიღების წელი",
+
+        options: ["1918", "1919", "1921", "1920"],
+        correctIndex: 2,
+        hint: ""
+      },
+      {
+        question: "დამოუკიდებელი საქართველოს პირველი კონსტიტუციის პროექტი შეადგინა",
+
+        options: ["მიხეილ ჟავახიშვილმა", "ნოე ჟორდანია", "პეტრე სუბელიანი", "აკაკი წერეთელი"],
+        correctIndex: 1,
+        hint: ""
+      },
+      {
+        question: "დამოუკიდებელი საქართველოს პარლამენტს ერქვა",
+        
+        options: ["ეროვნული კრება", "პარლამენტი", "დიდი საბჭო ", "ეროვნული ასამბლეა"],
+        correctIndex: 0,
+        hint: ""
+      },
+      {
+        question: "დამოკიდებულ საქართველოში რა ფორმის მართველობა არსებობდა?",
+        
+        options: ["მონარქია", "დემოკრატიული რესპუბლიკა", "სამხედრო დიქტატურა", "საბჭოთა რეჟიმი"],
+        correctIndex: 1,
+        hint: ""
+      },
+      {
+        question: "დამოუკიდებელი საქართველოს პირველი დემოკრატიული არჩევნები გაიმართა",
+        
+        options: ["1918", "1919", "1920", "1921"],
+        correctIndex: 1,
+        hint: ""
+      },
+      {
+        question: "დამოუკიდებელ საქართველოს სამთავრობო მინისტღტა საბჭოს სახელწოდება იყო",
+        
+        options: ["მინისტრთა კაბინეტი", "ეროვნული ასამბლეა", "პარლამენტი", "დემოკრატიული საბჭო"],
+        correctIndex: 0,
+        hint: ""
+      },
+      {
+        question: "დამოუკიდებელ საქართველოს პირველი საგარეო აღიარება მიიღო",
+        
+        options: ["საფრანგეთმა", "გერმანიამ", "ინგლისმა", "რუსეთმა"],
+        correctIndex: 0,
+        hint: ""
+      },
+      {
+        question: "დამოუკიდებელი საქართველოს მთავარი საფრთე იყო",
+        
+        options: ["თურქეთი", "საბჭოთა რუსეთი", "ბრიტანეთი", "საფრანგეთი"],
+        correctIndex: 1,
+        hint: ""
+      },
+      {
+        question: "დამოუკიდებელი საქართველოს ეროვნული დროშის ძირითადი ფერი იყო",
+        
+        options: ["წითელი", "თეთრი", "მწვანე", "ლურჯი"],
+        correctIndex: 0,
+        hint: ""
+      },
+      {
+        question: "დამოუკიდებელი საქართველოს საგარეო პოლიტიკის ერთ-რტი მიზანი იყო",
+        
+        options: ["ევროპის ქვეყნებთან კონსტრუქციული ურთიერთობა", "ჩინეთთან სახმედო ალიანსი", "აფრიკის კოლონიზაცია", "სამხრეთ ამერიკაში სავაჭრო ზონების  შექმნა"],
+        correctIndex: 0,
+        hint: ""
+      },
+      {
+        question: "დამოუკიდებელი საქართველოს 1918 წლის მთავრობამ აღადგინა შემდეგი ეროვნული სიმბოლო",
+        
+        options: ["ეროვნული ჰიმნი", "მონარქის საპატიო მინდორი", "საეკლესიო კანონი", "სამხედრო ფლოტის ნიშანი"],
+        correctIndex: 0,
+        hint: ""
+      },
+      {
+        question: "დამოუკიდებელი საქართველოს დემოკრატიული რესპუბლიკის უმაღლესი ორგანო იყო",
+        
+        options: ["პარლამენტი", "სახელმწიფო საბჭო", "სახმედო კომიტეტი", "ეროვნული სასამართლო"],
+        correctIndex: 0,
+        hint: ""
+      },
+      {
+        question: "დამოუკიდებელი საქართველოს 1918 წლის მთავრობის ძირითადი მიზანი იყო",
+        
+        options: ["სახმედო დიქტატურის დამყარება", "ეროვნული დამოკიდებულების შენარჩუნება", "მონარქიის აღდგენა", "უცხოეთის კოლონიზაცია"],
+        correctIndex: 1,
+        hint: ""
+      }
+    ];
+
+    let currentQuestion = 0;
+    let answered = false;
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
+
+    const quizContainer = document.getElementById('quiz');
+
+    function loadQuestion() {
+      answered = false;
+      const q = questions[currentQuestion];
+      quizContainer.innerHTML = `
+        <h1>${q.question}</h1>
+        <div class="options">
+          ${q.options.map((opt, i) => `
+            <div class="option" onclick="checkAnswer(${i})">${opt}</div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function checkAnswer(selectedIndex) {
+      if (answered) return;
+      answered = true;
+
+      const optionsEls = document.querySelectorAll('.option');
+      const correctIndex = questions[currentQuestion].correctIndex;
+
+      if (selectedIndex === correctIndex) {
+        optionsEls[selectedIndex].classList.add('correct');
+        correctAnswers++;
+      } else {
+        optionsEls[selectedIndex].classList.add('incorrect');
+        optionsEls[correctIndex].classList.add('correct');
+        wrongAnswers++;
+      }
+
+      setTimeout(() => {
+        currentQuestion++;
+        if (currentQuestion >= questions.length) {
+          showResults();
+        } else {
+          loadQuestion();
+        }
+      }, 1500);
+    }
+
+    function showResults() {
+      quizContainer.innerHTML = `
+        <div class="popup-box">
+          <h2>ქვიზი დასრულდა 🎉</h2>
+          <p>✅ სწორი პასუხები: ${correctAnswers}</p>
+          <p>❌ არასწორი პასუხები: ${wrongAnswers}</p>
+          <div class="popup-buttons">
+            <button onclick="restartQuiz()">თავიდან დაწყება</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      correctAnswers = 0;
+      wrongAnswers = 0;
+      loadQuestion();
+    }
+
+    // ✅ დაწყება
+    loadQuestion();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>რეგისტრაცია</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #2f2f2f;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #fff;
+    }
+
+    nav {
+      background-color: #3f3f3f;
+      display: flex;
+      justify-content: flex-start;
+      padding: 15px 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 40px;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav ul li {
+      position: relative;
+      cursor: pointer;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: #ddd;
+      font-weight: 600;
+      font-size: 17px;
+      padding: 6px 0;
+      display: inline-block;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    nav ul li:hover > a {
+      color: #4caf50;
+      transform: scale(1.1);
+    }
+
+    .tooltip {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 320px;
+      background-color: #a5d6a7;
+      color: #1b5e20;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      font-size: 15px;
+      font-weight: 500;
+      z-index: 10;
+      display: none;
+      user-select: none;
+    }
+
+    nav ul li:hover .tooltip {
+      display: block;
+    }
+
+    .columns {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 48%;
+    }
+
+    .column p {
+      margin: 0;
+      color: #1b5e20;
+    }
+
+    /* რეგისტრაციის ფორმა */
+    .form-container {
+      background-color: #3f3f3f;
+      padding: 40px 30px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      width: 100%;
+      max-width: 400px;
+      margin: 100px auto 40px;
+      position: relative;
+    }
+
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 22px;
+      color: #ffffff;
+    }
+
+    form {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .form-group {
+      flex: 1 1 48%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      margin-bottom: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #ddd;
+      cursor: pointer;
+      transition: color 0.3s ease, transform 0.3s ease;
+      user-select: none;
+    }
+
+    .form-group:hover > label {
+      color: #4caf50;
+      transform: scale(1.05);
+    }
+
+    input[type="text"] {
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      background-color: #555;
+      color: white;
+      font-size: 16px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    input[type="text"]::placeholder {
+      color: #bbb;
+    }
+
+    input[type="text"]:hover,
+    input[type="text"]:focus {
+      background-color: #666;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      outline: none;
+    }
+
+    /* Submit ღილაკი სრულ სიგანეზე როგორც სანდრო*/
+    input[type="submit"] {
+      flex-basis: 100%;
+      padding: 12px;
+      background-color: #4caf50;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      margin-top: 10px;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #45a049;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Success შეტყობინება სუკა */
+    .success-message {
+      position: fixed;
+      top: 20px;
+      right: -400px;
+      opacity: 0;
+      background-color: #4caf50;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      transition: right 0.5s ease, opacity 0.5s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .success-message.show {
+      right: 20px;
+      opacity: 1;
+    }
+
+    .success-message .icon {
+      font-size: 20px;
+    }
+
+
+    /* შეცდომის შეტყობინება მარცხენა ქვედა კუთხეში / მარჯვენაზე ავა */
+    .error-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #e74c3c;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    z-index: 1100;
+    max-width: 320px;
+    user-select: none;
+    }
+  .error-message.show {
+    opacity: 1;
+    pointer-events: auto;
+    }
+    
+    @media (max-width: 500px) {
+      form {
+        flex-direction: column;
+      }
+      .form-group {
+        flex-basis: 100%;
+      }
+      input[type="submit"] {
+        margin-top: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <ul>
+    <li>
+      <a href="#">მონაწილეები</a>
+      <div class="tooltip">
+        <div class="columns">
+          <div class="column">
+            <p>ლიზი სხირტლაძე</p>
+            <p>გაბრიელ ცნობილაძე</p>
+            <p>ნუცა ხაჩირაშვილი</p>
+            <p>თორნიკე მღებრიშვილი</p>
+          </div>
+          <div class="column">
+            <p>საბა ქორჩილავა</p>
+            <p>ანდრია მებონია</p>
+            <p>რომეო კორშია</p>
+            <p>ნიკა ბერიძე</p>
+            <p>სანდრო სათმანიძე</p>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<div class="form-container">
+  <h2>რეგისტრაცია</h2>
+  <form id="registrationForm" novalidate>
+    <div class="form-group">
+      <label for="firstName">სახელი</label>
+      <input type="text" id="firstName" name="firstName" placeholder="მაგ: ნიკა" required />
+    </div>
+    <div class="form-group">
+      <label for="lastName">გვარი</label>
+      <input type="text" id="lastName" name="lastName" placeholder="მაგ: ქავთარაძე" required />
+    </div>
+    <input type="submit" value="დარეგისტრირება" />
+  </form>
+</div>
+
+<!-- Success შეტყობინება გამოვიდა დაჭერისას -->
+<div id="successMessage" class="success-message">
+  <span class="icon">✔️</span>
+  <span>თქვენ წარმატებით დარეგისტრირდით ქვიზში</span>
+</div>
+
+<!-- Error შეტყობინება შეუვსებების გარეშე -->
+<div id="errorMessage" class="error-message"></div>
+
+<script>
+  const form = document.getElementById('registrationForm');
+  const successMsg = document.getElementById('successMessage');
+  const errorMsg = document.getElementById('errorMessage');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const firstName = form.firstName.value.trim();
+    const lastName = form.lastName.value.trim();
+
+    if (!firstName) {
+      showError('გთხოვთ შეავსოთ ცარიელი გრაფა');
+      form.firstName.focus();
+      return;
+    }
+
+    if (!lastName) {
+      showError('გთხოვთ შეავსოთ ცარიელი გgrafა');
+      form.lastName.focus();
+      return;
+    }
+
+    // ✅ მონაცემების შენახვა localStorage-ში
+    localStorage.setItem("firstName", firstName);
+    localStorage.setItem("lastName", lastName);
+
+    // ✅ წარმატების შეტყობინება
+    successMsg.classList.add('show');
+
+    setTimeout(() => {
+      successMsg.classList.remove('show');
+    }, 2500);
+
+    setTimeout(() => {
+      window.location.href = "index.html"; 
+    }, 3000);
+
+    form.reset();
+  });
+
+  function showError(message) {
+    errorMsg.textContent = message;
+    errorMsg.classList.add('show');
+
+    setTimeout(() => {
+      errorMsg.classList.remove('show');
+    }, 4000);
+  }
+
+  form.firstName.addEventListener('input', () => {
+    if (form.firstName.value.trim()) {
+      errorMsg.classList.remove('show');
+    }
+  });
+
+  form.lastName.addEventListener('input', () => {
+    if (form.lastName.value.trim()) {
+      errorMsg.classList.remove('show');
+    }
+  });
+</script>
+
+</body>
+</html>
